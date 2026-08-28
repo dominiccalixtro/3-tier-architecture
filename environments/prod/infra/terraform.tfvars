@@ -1,0 +1,10 @@
+# Production environment
+environment          = "prod"
+instance_type        = "t3.medium"
+asg_min_size         = 2
+asg_max_size         = 6
+asg_desired_capacity = 3
+db_instance_class    = "db.t3.medium"
+db_engine_version    = "8.0"
+deletion_protection  = true
+multi_az             = true
