@@ -1,0 +1,9 @@
+# Development environment
+environment          = "dev"
+instance_type        = "t3.micro"
+asg_min_size         = 1
+asg_max_size         = 2
+asg_desired_capacity = 1
+db_instance_class    = "db.t3.micro"
+db_engine_version    = "8.0"
+deletion_protection  = false
