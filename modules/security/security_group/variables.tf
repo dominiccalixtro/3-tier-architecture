@@ -38,13 +38,7 @@ variable "egress_rules" {
     security_group_id = optional(string)
     description       = optional(string)
   }))
-  default = [
-    {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = "Allow all outbound traffic"
-    }
-  ]
+  # No default. See the comment on the egress rule in main.tf: an implicit
+  # allow-all default is the failure mode this module is designed to avoid.
+  default = []
 }

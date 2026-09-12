@@ -28,3 +28,13 @@ variable "nat_gateway_count" {
   type        = number
   default     = 1
 }
+variable "name_prefix" {
+  description = "Prefix for named resources created by this module."
+  type        = string
+}
+
+variable "flow_log_retention_days" {
+  description = "CloudWatch Logs retention, in days, for VPC flow logs."
+  type        = number
+  default     = 30
+}

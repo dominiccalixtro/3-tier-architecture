@@ -123,3 +123,14 @@ variable "nat_gateway_count" {
   type        = number
   default     = 1
 }
+variable "alb_deletion_protection" {
+  description = "Block accidental deletion of the load balancer."
+  type        = bool
+  default     = false
+}
+
+variable "alb_log_retention_days" {
+  description = "Days to keep load balancer access logs."
+  type        = number
+  default     = 30
+}

@@ -1,4 +1,5 @@
 module "rds" {
+  # checkov:skip=CKV_TF_1:Registry modules are versioned by release tag, not commit hash. The ~> 6.0 constraint plus the committed lock file is the pinning mechanism available for a registry source.
   source  = "terraform-aws-modules/rds/aws"
   version = "~> 6.0"
 

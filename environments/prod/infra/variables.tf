@@ -129,3 +129,14 @@ variable "acm_certificate_arn" {
   type        = string
   default     = ""
 }
+variable "alb_deletion_protection" {
+  description = "Block accidental deletion of the load balancer."
+  type        = bool
+  default     = true
+}
+
+variable "alb_log_retention_days" {
+  description = "Days to keep load balancer access logs."
+  type        = number
+  default     = 90
+}

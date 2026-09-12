@@ -49,6 +49,7 @@ module "network" {
   database_subnets_cidr = var.database_subnets_cidr
   availability_zones    = local.availability_zones
   nat_gateway_count     = var.nat_gateway_count
+  name_prefix           = "${var.project}-${var.environment}"
 }
 
 module "iam" {
@@ -79,6 +80,16 @@ module "alb_sg" {
       description = "Allow HTTPS"
     }
   ]
+
+  egress_rules = [
+    {
+      from_port         = 80
+      to_port           = 80
+      protocol          = "tcp"
+      security_group_id = module.web_sg.id
+      description       = "Forward to the web tier and run health checks"
+    }
+  ]
 }
 
 module "web_sg" {
@@ -94,6 +105,37 @@ module "web_sg" {
       protocol          = "tcp"
       security_group_id = module.alb_sg.id
       description       = "Allow HTTP from ALB"
+    }
+  ]
+
+  egress_rules = [
+    {
+      from_port         = 3306
+      to_port           = 3306
+      protocol          = "tcp"
+      security_group_id = module.db_sg.id
+      description       = "MySQL to the database tier"
+    },
+    {
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "HTTPS for package updates and the SSM agent, via the NAT gateway"
+    },
+    {
+      from_port   = 53
+      to_port     = 53
+      protocol    = "udp"
+      cidr_blocks = [var.vpc_cidr]
+      description = "DNS to the VPC resolver"
+    },
+    {
+      from_port   = 53
+      to_port     = 53
+      protocol    = "tcp"
+      cidr_blocks = [var.vpc_cidr]
+      description = "DNS to the VPC resolver"
     }
   ]
 }
@@ -113,6 +155,9 @@ module "db_sg" {
       description       = "Allow MySQL from web tier"
     }
   ]
+
+  # The database initiates no outbound connections. Left empty deliberately.
+  egress_rules = []
 }
 
 module "alb" {
@@ -121,6 +166,11 @@ module "alb" {
   vpc_id             = module.network.vpc_id
   public_subnets_ids = module.network.public_subnets_ids
   alb_sg_id          = module.alb_sg.id
+  name_prefix        = "${var.project}-${var.environment}"
+
+  enable_deletion_protection = var.alb_deletion_protection
+  log_retention_days         = var.alb_log_retention_days
+
   certificate_arn    = local.alb_certificate_arn
 }
 
@@ -130,6 +180,12 @@ resource "aws_acm_certificate" "this" {
   domain_name      = var.alb_domain_name
   certificate_body = tls_self_signed_cert.alb.cert_pem
   private_key      = tls_private_key.alb.private_key_pem
+
+  # A certificate in use by a listener cannot be deleted, so replacing it
+  # destroy-first breaks the apply and leaves the listener without a cert.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 module "asg" {
